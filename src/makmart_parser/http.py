@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 
 from requests import Response, Session
@@ -20,6 +20,9 @@ class HttpClient:
     timeout: int
     max_retries: int
 
+    _session: Session = field(init=False, repr=False)
+    _last_request_ts: float = field(init=False, repr=False, default=0.0)
+
     def __post_init__(self) -> None:
         self._session = Session()
         retries = Retry(
@@ -32,7 +35,7 @@ class HttpClient:
         self._session.mount("http://", adapter)
         self._session.mount("https://", adapter)
         self._session.headers.update({"User-Agent": self.user_agent})
-        self._last_request_ts: float = 0.0
+        self._last_request_ts = 0.0
 
     def build_url(self, path: str) -> str:
         if path.startswith("http"):
